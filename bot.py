@@ -4,7 +4,7 @@ from pyrogram.types import *
 from motor.motor_asyncio import AsyncIOMotorClient  
 from os import environ as env
 import asyncio, datetime, time
-
+import pytz  # Import pytz library for timezone handling
 
 ACCEPTED_TEXT = "Hey {user}\n\nYour Request For {chat} Is Accepted ✅"
 START_TEXT = "Hai {}\n\nI am Auto Request Accept Bot With Working For All Channel. Add Me In Your Channel To Use"
@@ -20,8 +20,6 @@ Cluster = Dbclient['Cluster0']
 Data = Cluster['users']
 Bot = Client(name='AutoAcceptBot', api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
        
-      
-     
 @Bot.on_message(filters.command("start") & filters.private)                    
 async def start_handler(c, m):
     user_id = m.from_user.id
@@ -32,7 +30,6 @@ async def start_handler(c, m):
     ]]
     return await m.reply_text(text=START_TEXT.format(m.from_user.mention), disable_web_page_preview=True, reply_markup=InlineKeyboardMarkup(button))
           
-
 @Bot.on_message(filters.command(["broadcast", "users"]) & filters.user(ADMINS))  
 async def broadcast(c, m):
     if m.text == "/users":
@@ -72,9 +69,6 @@ async def broadcast(c, m):
     await sts.delete()
     await m.reply_text(f"Broadcast Completed:\nCompleted in {time_taken} seconds.\n\nTotal Users {total_users}\nCompleted: {done} / {total_users}\nSuccess: {success}\nFailed: {failed}", quote=True)
 
-
-  
- 
 @Bot.on_chat_join_request()
 async def req_accept(c, m):
     user_id = m.from_user.id
@@ -83,10 +77,11 @@ async def req_accept(c, m):
     await c.approve_chat_join_request(chat_id, user_id)
     try: await c.send_message(user_id, ACCEPTED_TEXT.format(user=m.from_user.mention, chat=m.chat.title))
     except Exception as e: print(e)
-   
-   
 
+# Add a function to get current server time in US-West1 timezone
+def get_server_time():
+    tz = pytz.timezone('US/Pacific')  # US-West1 timezone
+    return datetime.datetime.now(tz=tz)
+
+# Run the bot
 Bot.run()
-
-
-
